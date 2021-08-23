@@ -12,23 +12,23 @@ from Utility.Layers import MLP_IC, GraphNet
 
 class EFA_DTI_Module(pl.LightningModule):
     def __init__(
-            self,
-            mol_dim: int = 196,
-            mol_n_layers: int = 6,
-            mol_n_heads: int = 6,
-            mol_attn: str = "norm",
-            act: str = "relu",
-            attn_dropout: float = 0.1,
-            dropout: float = 0.3,
-            graph_norm_type: str = "gn",
-            fp_dims: List = [2048, 512, 128],
-            prottrans_dims: List = [2048, 1024, 512],
-            output_dims: List = [2048, 512, 1],
-            graph_pool: str = "deepset",
-            lr: float = 2e-3,
-            lr_anneal_epochs: int = 200,
-            weight_decay: float = 1e-2,
-            eps: float = 1e-16,
+        self,
+        mol_dim: int = 196,
+        mol_n_layers: int = 6,
+        mol_n_heads: int = 6,
+        mol_attn: str = "norm",
+        act: str = "relu",
+        attn_dropout: float = 0.1,
+        dropout: float = 0.3,
+        graph_norm_type: str = "gn",
+        fp_dims: List = [2048, 512, 128],
+        prottrans_dims: List = [2048, 1024, 512],
+        output_dims: List = [2048, 512, 1],
+        graph_pool: str = "deepset",
+        lr: float = 2e-3,
+        lr_anneal_epochs: int = 200,
+        weight_decay: float = 1e-2,
+        eps: float = 1e-16,
     ):
         super(EFA_DTI_Module, self).__init__()
         self.save_hyperparameters()
@@ -48,9 +48,9 @@ class EFA_DTI_Module(pl.LightningModule):
         self.fingerprint_enc = MLP_IC(*fp_dims, dropout=dropout, act=act)
         self.prottrans_enc = MLP_IC(*prottrans_dims, dropout=dropout, act=act)
         outd = (
-                mol_dim * (1 if graph_pool == "deepset" else 2)
-                + fp_dims[-1]
-                + prottrans_dims[-1]
+            mol_dim * (1 if graph_pool == "deepset" else 2)
+            + fp_dims[-1]
+            + prottrans_dims[-1]
         )
         self.output = MLP_IC(outd, *output_dims, dropout=dropout, act=act)
 
@@ -89,7 +89,9 @@ class EFA_DTI_Module(pl.LightningModule):
         self.log_dict(
             {
                 "valid_mse": th.as_tensor(F.mse_loss(yhat, y), device=self.device),
-                "valid_ci": th.as_tensor(concordance_index(y, yhat), device=self.device),
+                "valid_ci": th.as_tensor(
+                    concordance_index(y, yhat), device=self.device
+                ),
                 "valid_r2": th.as_tensor(r2_score(y, yhat), device=self.device),
             }
         )
@@ -102,14 +104,36 @@ class EFA_DTI_Module(pl.LightningModule):
             eps=float(self.hparams.eps),
         )
         scheduler = {
-            "scheduler": th.optim.lr_scheduler.LambdaLR(
+            "scheduler": th.optim.lr_scheduler.OneCycleLR(
                 optimizer,
-                lr_lambda=lambda epoch: max(
-                    1e-7, 1 - epoch / self.hparams.lr_anneal_epochs
-                )
+                max_lr=0.01,
+                steps_per_epoch=self.num_training_steps,
+                epochs=self.hparams.lr_anneal_epochs,
+                anneal_strategy="cos",
             ),
             "reduce_on_plateau": False,
             "interval": "epoch",
             "frequency": 1,
         }
         return [optimizer], [scheduler]
+
+    @property
+    def num_training_steps(self) -> int:
+        """Total training steps inferred from datamodule and devices."""
+        if self.trainer.max_steps:
+            return self.trainer.max_steps
+
+        limit_batches = self.trainer.limit_train_batches
+        batches = len(self.train_dataloader())
+        batches = (
+            min(batches, limit_batches)
+            if isinstance(limit_batches, int)
+            else int(limit_batches * batches)
+        )
+
+        num_devices = max(1, self.trainer.num_gpus, self.trainer.num_processes)
+        if self.trainer.tpu_cores:
+            num_devices = max(num_devices, self.trainer.tpu_cores)
+
+        effective_accum = self.trainer.accumulate_grad_batches * num_devices
+        return (batches // effective_accum) * self.trainer.max_epochs

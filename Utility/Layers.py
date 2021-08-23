@@ -16,13 +16,9 @@ Graph Net Layers
 ----------------------
 """
 
+
 class ActGLU(nn.Module):
-    def __init__(
-        self,
-        d_in: int,
-        d_out: int,
-        act: str = "relu"
-    ):
+    def __init__(self, d_in: int, d_out: int, act: str = "relu"):
         super(ActGLU, self).__init__()
         self.proj = nn.Linear(d_in, d_out * 2)
         acts = {"gelu": nn.GELU, "relu": nn.ReLU}
@@ -126,8 +122,8 @@ class GraphNetBlock(nn.Module):
         g.apply_edges(
             lambda edge: {
                 "wv": n2n_attn * edge.src["v"]
-                      + n2e_attn * edge.data["ev"]
-                      + e2n_attn * edge.src["v"]
+                + n2e_attn * edge.data["ev"]
+                + e2n_attn * edge.src["v"]
             }
         )
         g.update_all(fn.copy_e("wv", "wv"), fn.sum("wv", "z"))
@@ -190,19 +186,17 @@ class GraphNet(nn.Module):
         out = self.readout(g, n)
         return out
 
+
 """
 ----------------------
 MLP Layers
 ----------------------
 """
 
+
 class MLP_IC(nn.Sequential):
     def __init__(
-        self,
-        *dims,
-        norm: bool = True,
-        dropout: float = 0.1,
-        act: str = "relu"
+        self, *dims, norm: bool = True, dropout: float = 0.1, act: str = "relu"
     ):
         acts = {"gelu": nn.GELU, "relu": nn.ReLU}
         act = acts[act]
@@ -219,18 +213,16 @@ class MLP_IC(nn.Sequential):
         l.append(nn.Linear(dims[-2], dims[-1]))
         super(MLP_IC, self).__init__(*l)
 
+
 """
 ----------------------
 Graph Pooling Layers
 ----------------------
 """
 
+
 class DeepSet(nn.Module):
-    def __init__(self,
-         d_in: int,
-         d_out: int,
-         dropout: float = 0.1
-    ):
+    def __init__(self, d_in: int, d_out: int, dropout: float = 0.1):
         super(DeepSet, self).__init__()
         self.glu = nn.Sequential(nn.Linear(d_in, d_in * 2), nn.GLU())
         self.agg = nn.Sequential(

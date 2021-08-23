@@ -14,9 +14,10 @@ class ReZero(nn.Module):
 
 
 class GraphNorm(nn.Module):
-    def __init__(self,
-         norm_type: str = "gn",
-         hidden_dim: int = 300,
+    def __init__(
+        self,
+        norm_type: str = "gn",
+        hidden_dim: int = 300,
     ):
         super(GraphNorm, self).__init__()
         assert norm_type in ["bn", "gn", "ln", None]
@@ -55,13 +56,7 @@ class GraphNorm(nn.Module):
 
 
 class GraphNormAndProj(nn.Module):
-    def __init__(self,
-         d_in: int,
-         d_out: int,
-         act: str,
-         dropout: float,
-         norm_type: str
-    ):
+    def __init__(self, d_in: int, d_out: int, act: str, dropout: float, norm_type: str):
         super(GraphNormAndProj, self).__init__()
         self.norm = GraphNorm(norm_type, d_in)
         acts = {"gelu": nn.GELU, "relu": nn.ReLU}

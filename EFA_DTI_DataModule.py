@@ -41,9 +41,7 @@ class EFA_DTI_DataModule(pl.LightningDataModule):
             y_transform=self.y_transform,
         )
         self.train_idx, self.valid_idx = train_test_split(
-            range(len(self.dataset)),
-            test_size=0.1,
-            random_state=self.seed
+            range(len(self.dataset)), test_size=0.1, random_state=self.seed
         )
 
     @staticmethod

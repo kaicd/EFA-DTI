@@ -6,7 +6,6 @@ import numpy as np
 import torch as th
 from rdkit import Chem
 from rdkit.Chem import AllChem, DataStructs
-from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModel, pipeline
 
 

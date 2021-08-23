@@ -1,5 +1,4 @@
 import pytorch_lightning as pl
-import wandb
 import yaml
 from pytorch_lightning.callbacks import LearningRateMonitor, EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
@@ -23,22 +22,19 @@ data = EFA_DTI_DataModule(**dataset_params)
 # Set wandb
 pl.seed_everything(project_params["seed"])
 trainer = pl.Trainer(
-    logger = WandbLogger(
+    logger=WandbLogger(
         project=project_params["project"],
         entity=project_params["entity"],
-        log_model=True
+        log_model=True,
     ),
     gpus=project_params["gpus"],
     accelerator=project_params["accelerator"],
     max_epochs=project_params["max_epochs"],
     callbacks=[
         EarlyStopping(
-            patience=project_params["patience"],
-            monitor=project_params["monitor"]
+            patience=project_params["patience"], monitor=project_params["monitor"]
         ),
-        LearningRateMonitor(
-            logging_interval=project_params["logging_interval"]
-        )
-    ]
+        LearningRateMonitor(logging_interval=project_params["logging_interval"]),
+    ],
 )
 trainer.fit(net, data)

@@ -36,7 +36,10 @@ class EFA_DTI_Dataset(Dataset):
         # Graphs(g_emb)
         graphs_path = os.path.join(data_dir, "ligand_graphs.pkl")
         if not os.path.exists(graphs_path) or reset:
-            print(f"{graphs_path} does not exist!\nProcessing SMILES to graphs...",flush=True)
+            print(
+                f"{graphs_path} does not exist!\nProcessing SMILES to graphs...",
+                flush=True,
+            )
             self.ligand_graphs = {}
             for s in tqdm(self.data["SMILES"]):
                 if not s in self.ligand_graphs:
@@ -51,7 +54,10 @@ class EFA_DTI_Dataset(Dataset):
         # Fingerprint(fp_emb)
         fingerprint_path = os.path.join(data_dir, "ligand_fingerprints.pkl")
         if not os.path.exists(fingerprint_path) or reset:
-            print(f"{fingerprint_path} does not exist!\nProcessing SMILES to fingerprints...", flush=True)
+            print(
+                f"{fingerprint_path} does not exist!\nProcessing SMILES to fingerprints...",
+                flush=True,
+            )
             self.ligand_fps = {}
             for s in tqdm(self.data["SMILES"]):
                 if not s in self.ligand_fps:
@@ -66,7 +72,10 @@ class EFA_DTI_Dataset(Dataset):
         # ProtTrans(pt_emb)
         prottrans_path = os.path.join(data_dir, "target_prottrans.pkl")
         if not os.path.exists(prottrans_path) or reset:
-            print(f"{prottrans_path} does not exist!\nProcessing proteins to ProtTrans embedding...", flush=True)
+            print(
+                f"{prottrans_path} does not exist!\nProcessing proteins to ProtTrans embedding...",
+                flush=True,
+            )
             pemb = EmbedProt()
             self.target_pts = {}
             for s in tqdm(self.data["SEQUENCE"]):
