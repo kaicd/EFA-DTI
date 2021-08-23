@@ -28,6 +28,7 @@ module_params:
 dataset_params:
   data_dir: "/raid/KAICD_sarscov2/EFA_DTI/data/"
   data_name: "BindingDB_IC50.ftr"
+  unit: "nM"
   reset: False
   batch_size: 1024
   seed: 42

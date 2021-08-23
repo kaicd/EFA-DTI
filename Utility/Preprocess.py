@@ -1,5 +1,5 @@
 import re
-from typing import Union
+from typing import Callable, Union
 
 import dgl
 import numpy as np
@@ -7,6 +7,16 @@ import torch as th
 from rdkit import Chem
 from rdkit.Chem import AllChem, DataStructs
 from transformers import AutoTokenizer, AutoModel, pipeline
+
+
+def dgl_collate(batch):
+    g, fp, pt, y = zip(*batch)
+    return (
+        dgl.batch(g),
+        th.cat(fp),
+        th.cat(pt),
+        th.cat(y),
+    )
 
 
 def dgl_graph(graph, ndatakey="feat", edatakey="feat") -> dgl.DGLHeteroGraph:
@@ -26,6 +36,19 @@ def get_fingerprint(mol: Union[Chem.Mol, str], r=3, nBits=2048, **kwargs) -> np.
     # noinspection PyUnresolvedReferences
     DataStructs.ConvertToNumpyArray(fp, arr)
     return arr
+
+
+def pIC50_transform(y: float, unit: str = "nM") -> th.Tensor:
+    if unit == "nM":
+        y = y / 1e9
+    elif unit == "uM":
+        y = y / 1e6
+    elif unit == "M":
+        pass
+    else:
+        raise ValueError("The exact unit must be input(nM, uM, M).")
+
+    return -np.log10(y)
 
 
 class EmbedProt:

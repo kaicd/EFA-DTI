@@ -17,12 +17,14 @@ class EFA_DTI_Dataset(Dataset):
         self,
         data_dir: str,
         data_name: str,
+        unit: str = "nM",
         reset: bool = False,
         device: int = 0,
-        y_transform: Callable = None,
+        y_transform: Callable = math.log10,
     ):
         self.data_dir = data_dir
         self.data_name = data_name
+        self.unit = unit
         self.y_transform = y_transform
 
         data_path = os.path.join(self.data_dir, self.data_name)
@@ -92,7 +94,7 @@ class EFA_DTI_Dataset(Dataset):
         # Raw data
         smiles = self.data["SMILES"][idx]
         sequence = self.data["SEQUENCE"][idx]
-        ic50 = math.log10(self.data["IC50"][idx])
+        ic50 = self.data["IC50"][idx]
 
         # Preprocessed data
         g = self.ligand_graphs[smiles]
@@ -101,7 +103,7 @@ class EFA_DTI_Dataset(Dataset):
         y = th.as_tensor(ic50, dtype=th.float32).unsqueeze(0)
 
         if self.y_transform is not None:
-            y = self.y_transform(y)
+            y = self.y_transform(y, self.unit)
 
         return g, fp, pt, y
 
