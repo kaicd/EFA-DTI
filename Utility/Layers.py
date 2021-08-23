@@ -1,16 +1,36 @@
 import math
-from typing import Callable
 
 import dgl
 import dgl.function as fn
 import torch as th
-import torch.nn.functional as F
+import torch.nn as nn
 from dgl.ops import edge_softmax
 from einops import rearrange
 from ogb.graphproppred.mol_encoder import AtomEncoder, BondEncoder
-from torch import nn
 
-from Utility.Norms import Rezero, GraphNormAndProj, EdgeNormWithGainAndBias
+from Utility.Norms import ReZero, GraphNormAndProj, EdgeNormWithGainAndBias
+
+"""
+----------------------
+Graph Net Layers
+----------------------
+"""
+
+class ActGLU(nn.Module):
+    def __init__(
+        self,
+        d_in: int,
+        d_out: int,
+        act: str = "relu"
+    ):
+        super(ActGLU, self).__init__()
+        self.proj = nn.Linear(d_in, d_out * 2)
+        acts = {"gelu": nn.GELU, "relu": nn.ReLU}
+        self.act = acts[act]()
+
+    def forward(self, x):
+        x, gate = self.proj(x).chunk(2, dim=-1)
+        return x * self.act(gate)
 
 
 class GraphNetBlock(nn.Module):
@@ -22,7 +42,7 @@ class GraphNetBlock(nn.Module):
         n_heads: int = 8,
         dropout: float = 0.2,
         attn_weight_norm="norm",
-        act: Callable = nn.ReLU,
+        act: str = "relu",
         norm_type="gn",
     ):
         """
@@ -106,8 +126,8 @@ class GraphNetBlock(nn.Module):
         g.apply_edges(
             lambda edge: {
                 "wv": n2n_attn * edge.src["v"]
-                + n2e_attn * edge.data["ev"]
-                + e2n_attn * edge.src["v"]
+                      + n2e_attn * edge.data["ev"]
+                      + e2n_attn * edge.src["v"]
             }
         )
         g.update_all(fn.copy_e("wv", "wv"), fn.sum("wv", "z"))
@@ -126,16 +146,16 @@ class GraphNetBlock(nn.Module):
 class GraphNet(nn.Module):
     def __init__(
         self,
-        features=256,
-        qk_dim=32,
-        v_dim=64,
-        n_layers=8,
-        n_heads=8,
-        dropout=0.2,
-        attn_weight_norm="norm",
-        act=nn.ReLU,
-        norm_type="gn",
-        pool_type="deepset",
+        features: int = 256,
+        qk_dim: int = 32,
+        v_dim: int = 64,
+        n_layers: int = 8,
+        n_heads: int = 8,
+        dropout: float = 0.2,
+        attn_weight_norm: str = "norm",
+        act: str = "relu",
+        norm_type: str = "gn",
+        pool_type: str = "deepset",
     ):
         super(GraphNet, self).__init__()
         self.n_layers = n_layers
@@ -170,20 +190,22 @@ class GraphNet(nn.Module):
         out = self.readout(g, n)
         return out
 
-
-class ActGLU(nn.Module):
-    def __init__(self, d_in, d_out, act: Callable = nn.GELU):
-        super(ActGLU, self).__init__()
-        self.proj = nn.Linear(d_in, d_out * 2)
-        self.act = act()
-
-    def forward(self, x):
-        x, gate = self.proj(x).chunk(2, dim=-1)
-        return x * self.act(gate)
-
+"""
+----------------------
+MLP Layers
+----------------------
+"""
 
 class MLP_IC(nn.Sequential):
-    def __init__(self, *dims, norm=True, dropout=0.1, act=nn.ReLU):
+    def __init__(
+        self,
+        *dims,
+        norm: bool = True,
+        dropout: float = 0.1,
+        act: str = "relu"
+    ):
+        acts = {"gelu": nn.GELU, "relu": nn.ReLU}
+        act = acts[act]
         l = []
         for i in range(len(dims) - 2):
             l.extend(
@@ -197,9 +219,18 @@ class MLP_IC(nn.Sequential):
         l.append(nn.Linear(dims[-2], dims[-1]))
         super(MLP_IC, self).__init__(*l)
 
+"""
+----------------------
+Graph Pooling Layers
+----------------------
+"""
 
 class DeepSet(nn.Module):
-    def __init__(self, d_in, d_out, dropout=0.1):
+    def __init__(self,
+         d_in: int,
+         d_out: int,
+         dropout: float = 0.1
+    ):
         super(DeepSet, self).__init__()
         self.glu = nn.Sequential(nn.Linear(d_in, d_in * 2), nn.GLU())
         self.agg = nn.Sequential(
@@ -214,7 +245,7 @@ class DeepSet(nn.Module):
 
 
 class MeanMaxPool(nn.Module):
-    def __init__(self, dim):
+    def __init__(self, dim: int):
         super(MeanMaxPool, self).__init__()
         self.gain = nn.Parameter(th.ones(dim))
         self.bias = nn.Parameter(th.zeros(dim))

@@ -1,26 +1,25 @@
+import math
 import os
 import pickle
-from typing import Union, Callable
+from typing import Callable
 
-import dgl
-import numpy as np
+import pandas as pd
 import torch as th
 from ogb.utils import smiles2graph
-from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset
+from tqdm import tqdm
 
-from Utility.Preprocess import dgl_graph, get_fingerprints, EmbedProt
+from Utility.Preprocess import dgl_graph, get_fingerprint, EmbedProt
 
 
-class Interactions(Dataset):
+class EFA_DTI_Dataset(Dataset):
     def __init__(
         self,
         data_dir: str,
         data_name: str,
-        mol_featurizer: Callable = smiles2graph,
-        reset=False,
-        device=0,
-        y_transform=None,
+        reset: bool = False,
+        device: int = 0,
+        y_transform: Callable = None,
     ):
         self.data_dir = data_dir
         self.data_name = data_name
@@ -32,55 +31,70 @@ class Interactions(Dataset):
         elif self.data_name[-3:] == "csv":
             self.data = pd.read_csv(data_path)
         else:
-            raise ValueError("Invalid File Format.")
+            raise ValueError(f"Invalid File Format : {self.data_name[-4:]}")
 
-        # graphs
+        # Graphs(g_emb)
         graphs_path = os.path.join(data_dir, "ligand_graphs.pkl")
         if not os.path.exists(graphs_path) or reset:
-            logging.info("Processing SMILES to graphs...")
+            print(f"{graphs_path} does not exist!\nProcessing SMILES to graphs...",flush=True)
             self.ligand_graphs = {}
-            for s in self.data["SMILES"]:
+            for s in tqdm(self.data["SMILES"]):
                 if not s in self.ligand_graphs:
-                    self.ligand_graphs[s] = dgl_graph(mol_featurizer(s))
-            with open(graph_path, "wb") as f:
+                    self.ligand_graphs[s] = dgl_graph(smiles2graph(s))
+            with open(graphs_path, "wb") as f:
                 pickle.dump(self.ligand_graphs, f)
         else:
-            logging.info("Loading preprocessed graphs...")
-            with open(graph_path, "rb") as f:
+            print("Loading preprocessed graphs...", flush=True)
+            with open(graphs_path, "rb") as f:
                 self.ligand_graphs = pickle.load(f)
 
-        # fingerprint
-        fingerprint_path = os.path.join(data_dir, "ligand_fingerprints.npy")
+        # Fingerprint(fp_emb)
+        fingerprint_path = os.path.join(data_dir, "ligand_fingerprints.pkl")
         if not os.path.exists(fingerprint_path) or reset:
-            logging.info("processing fps...")
-            self.ligand_fps = get_fingerprints(self.ligands.values())
-            np.save(fingerprint_path, self.ligand_fps)
+            print(f"{fingerprint_path} does not exist!\nProcessing SMILES to fingerprints...", flush=True)
+            self.ligand_fps = {}
+            for s in tqdm(self.data["SMILES"]):
+                if not s in self.ligand_fps:
+                    self.ligand_fps[s] = get_fingerprint(s)
+            with open(fingerprint_path, "wb") as f:
+                pickle.dump(self.ligand_fps, f)
         else:
-            self.ligand_fps = np.load(fingerprint_path)
+            print("Loading preprocessed fingerprints...", flush=True)
+            with open(fingerprint_path, "rb") as f:
+                self.ligand_fps = pickle.load(f)
 
-        # ProtTrans(pt)
-        pt_path = os.path.join(data_dir, "pt.npy")
-        if not os.path.exists(pt_path) or reset:
-            logging.info("processing proteins to pt...")
+        # ProtTrans(pt_emb)
+        prottrans_path = os.path.join(data_dir, "target_prottrans.pkl")
+        if not os.path.exists(prottrans_path) or reset:
+            print(f"{prottrans_path} does not exist!\nProcessing proteins to ProtTrans embedding...", flush=True)
             pemb = EmbedProt()
-            self.pt = pemb(self.proteins.values(), device=device)
-            np.save(prottrans_path, self.pt)
+            self.target_pts = {}
+            for s in tqdm(self.data["SEQUENCE"]):
+                if not s in self.target_pts:
+                    self.target_pts[s] = pemb([s], device=device)[0]
+            with open(prottrans_path, "wb") as f:
+                pickle.dump(self.target_pts, f)
         else:
-            self.pt = np.load(prottrans_path)
+            print("Loading preprocessed ProtTrans embedding...", flush=True)
+            with open(prottrans_path, "rb") as f:
+                self.target_pts = pickle.load(f)
 
-    def __getitem__(self, item):
-        d, p = self.ids[item]
-        fp = th.as_tensor(self.ligand_fps[d], dtype=th.float32).unsqueeze(0)
-        pt = th.as_tensor(self.pt[p], dtype=th.float32).unsqueeze(0)
-        y = th.as_tensor(self.Y[d, p], dtype=th.float32).unsqueeze(0)
+    def __getitem__(self, idx):
+        # Raw data
+        smiles = self.data["SMILES"][idx]
+        sequence = self.data["SEQUENCE"][idx]
+        ic50 = math.log(self.data["IC50"][idx])
+
+        # Preprocessed data
+        g = self.ligand_graphs[smiles]
+        fp = th.as_tensor(self.ligand_fps[smiles], dtype=th.float32).unsqueeze(0)
+        pt = th.as_tensor(self.target_pts[sequence], dtype=th.float32).unsqueeze(0)
+        y = th.as_tensor(ic50, dtype=th.float32).unsqueeze(0)
 
         if self.y_transform is not None:
             y = self.y_transform(y)
 
-        g = self.ligand_graphs[d]
-        g = dgl_graph(g)
-
         return g, fp, pt, y
 
     def __len__(self):
-        return len(self.ids)
+        return len(self.data)

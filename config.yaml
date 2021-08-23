@@ -1,0 +1,35 @@
+project_params:
+  entity: "kaicd"
+  project: "EFA-DTI"
+  max_epochs: 500
+  seed: 42
+  gpus: 1
+  accelerator: "ddp"
+  patience: 80
+  monitor: "valid_mse"
+  logging_interval: "step"
+module_params:
+  mol_dim: 128
+  mol_n_layers: 8
+  mol_n_heads: 8
+  mol_attn: "softmax"
+  act: "gelu"
+  attn_dropout: 0.1
+  dropout: 0.3
+  graph_norm_type: "ln"
+  fp_dims: [2048, 512, 128]
+  prottrans_dims: [2048, 512, 256]
+  output_dims: [2048, 256, 1]
+  graph_pool: "mean_max"
+  lr: 0.0005
+  lr_anneal_epochs: 500
+  weight_decay: 1e-6
+  eps: 1e-16
+dataset_params:
+  data_dir: "/raid/KAICD_sarscov2/EFA_DTI/data/"
+  data_name: "BindingDB_IC50.ftr"
+  reset: False
+  batch_size: 1024
+  seed: 42
+  num_workers: 4
+  pin_memory: True

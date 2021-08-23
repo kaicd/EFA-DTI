@@ -14,11 +14,13 @@ class ReZero(nn.Module):
 
 
 class GraphNorm(nn.Module):
-    def __init__(self, norm_type, hidden_dim=300, print_info=None):
+    def __init__(self,
+         norm_type: str = "gn",
+         hidden_dim: int = 300,
+    ):
         super(GraphNorm, self).__init__()
         assert norm_type in ["bn", "gn", "ln", None]
         self.norm = None
-        self.print_info = print_info
         if norm_type == "bn":
             self.norm = nn.BatchNorm1d(hidden_dim)
         elif norm_type == "ln":
@@ -53,10 +55,17 @@ class GraphNorm(nn.Module):
 
 
 class GraphNormAndProj(nn.Module):
-    def __init__(self, d_in, d_out, act, dropout, norm_type):
+    def __init__(self,
+         d_in: int,
+         d_out: int,
+         act: str,
+         dropout: float,
+         norm_type: str
+    ):
         super(GraphNormAndProj, self).__init__()
         self.norm = GraphNorm(norm_type, d_in)
-        self.activation = act()
+        acts = {"gelu": nn.GELU, "relu": nn.ReLU}
+        self.activation = acts[act]()
         self.dropout = nn.Dropout(dropout)
         self.out = nn.Linear(d_in, d_out)
 
@@ -77,7 +86,7 @@ class EdgeNorm(th.autograd.Function):
     .. math::
         \textbf{\textit{a}}^i_m = \text{normalize}([l^{i,1}_m, ... , l^{i,N}_m])
 
-        \text{normalize}(\textbf{\textit{x}})^j = g \cdot
+        \text{normalize}(\textbf{\textit{x}})^j = g_emb \cdot
         \frac{x^j - \mu_{x}}{\sigma_x} + b
 
     Adapted from dgl implementation of EdgeSoftmax:
@@ -151,7 +160,7 @@ class EdgeNormWithGainAndBias(th.nn.Module):
     input structures.
     """
 
-    def __init__(self, nheads=1):
+    def __init__(self, nheads: int = 1):
         super().__init__()
         # trainable gain and bias per head.
         self.gain = th.nn.Parameter(th.ones(nheads, 1))

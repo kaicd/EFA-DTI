@@ -1,4 +1,5 @@
 import re
+from typing import Union
 
 import dgl
 import numpy as np
@@ -9,7 +10,7 @@ from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModel, pipeline
 
 
-def dgl_graph(graph, ndatakey="feat", edatakey="feat"):
+def dgl_graph(graph, ndatakey="feat", edatakey="feat") -> dgl.DGLHeteroGraph:
     g = dgl.graph(tuple(graph["edge_index"]), num_nodes=graph["num_nodes"])
     if graph["edge_feat"] is not None:
         g.edata[edatakey] = th.from_numpy(graph["edge_feat"])
@@ -18,7 +19,7 @@ def dgl_graph(graph, ndatakey="feat", edatakey="feat"):
     return g
 
 
-def get_fp(mol: Union[Chem.Mol, str], r=3, nBits=2048, **kwargs) -> np.ndarray:
+def get_fingerprint(mol: Union[Chem.Mol, str], r=3, nBits=2048, **kwargs) -> np.ndarray:
     if isinstance(mol, str):
         mol = Chem.MolFromSmiles(mol)
     fp = AllChem.GetMorganFingerprintAsBitVect(mol, r, nBits=nBits, **kwargs)
@@ -26,15 +27,6 @@ def get_fp(mol: Union[Chem.Mol, str], r=3, nBits=2048, **kwargs) -> np.ndarray:
     # noinspection PyUnresolvedReferences
     DataStructs.ConvertToNumpyArray(fp, arr)
     return arr
-
-
-def get_fingerprints(mols, r=3, nBits=2048):
-    if isinstance(mols, str):
-        mols = [mols]
-    arrs = []
-    for mol in mols:
-        arrs.append(get_fp(mol, r=r, nBits=nBits))
-    return np.stack(arrs)
 
 
 class EmbedProt:
@@ -55,7 +47,7 @@ class EmbedProt:
         seqs = [" ".join(list(x)) for x in proteins]
         seqs = [re.sub(r"[UZOB]", "X", sequence) for sequence in seqs]
         embs = []
-        for s in tqdm(seqs):
+        for s in seqs:
             emb = np.array(fe([s])[0])  # (n, 1024)
             cls = emb[0]
             rest = emb[1:].mean(0)
