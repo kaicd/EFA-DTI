@@ -92,7 +92,7 @@ class EFA_DTI_Dataset(Dataset):
         # Raw data
         smiles = self.data["SMILES"][idx]
         sequence = self.data["SEQUENCE"][idx]
-        ic50 = math.log(self.data["IC50"][idx])
+        ic50 = math.log10(self.data["IC50"][idx])
 
         # Preprocessed data
         g = self.ligand_graphs[smiles]
