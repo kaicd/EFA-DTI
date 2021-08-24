@@ -1,9 +1,6 @@
-import math
-from typing import Callable
+from typing import Callable, Optional
 
-import dgl
 import pytorch_lightning as pl
-import torch as th
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Subset, DataLoader
 
@@ -37,7 +34,7 @@ class EFA_DTI_DataModule(pl.LightningDataModule):
         self.pin_memory = pin_memory
         self.kwargs = kwargs
 
-    def setup(self):
+    def setup(self, stage: Optional[str] = None):
         self.dataset = EFA_DTI_Dataset(
             data_dir=self.data_dir,
             data_name=self.data_name,

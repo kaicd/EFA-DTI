@@ -36,7 +36,7 @@ class EFA_DTI_Dataset(Dataset):
             raise ValueError(f"Invalid File Format : {self.data_name[-4:]}")
 
         # Graphs(g_emb)
-        graphs_path = os.path.join(data_dir, "ligand_graphs.pkl")
+        graphs_path = os.path.join(data_dir, self.data_name[-4] + "_ligand_graphs.pkl")
         if not os.path.exists(graphs_path) or reset:
             print(
                 f"{graphs_path} does not exist!\nProcessing SMILES to graphs...",
@@ -54,7 +54,7 @@ class EFA_DTI_Dataset(Dataset):
                 self.ligand_graphs = pickle.load(f)
 
         # Fingerprint(fp_emb)
-        fingerprint_path = os.path.join(data_dir, "ligand_fingerprints.pkl")
+        fingerprint_path = os.path.join(data_dir, self.data_name[-4] + "_ligand_fingerprints.pkl")
         if not os.path.exists(fingerprint_path) or reset:
             print(
                 f"{fingerprint_path} does not exist!\nProcessing SMILES to fingerprints...",
@@ -72,7 +72,7 @@ class EFA_DTI_Dataset(Dataset):
                 self.ligand_fps = pickle.load(f)
 
         # ProtTrans(pt_emb)
-        prottrans_path = os.path.join(data_dir, "target_prottrans.pkl")
+        prottrans_path = os.path.join(data_dir, self.data_name[-4] + "_target_prottrans.pkl")
         if not os.path.exists(prottrans_path) or reset:
             print(
                 f"{prottrans_path} does not exist!\nProcessing proteins to ProtTrans embedding...",

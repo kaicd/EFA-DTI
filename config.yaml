@@ -8,6 +8,7 @@ project_params:
   patience: 80
   monitor: "valid_mse"
   logging_interval: "step"
+  save_path: "/raid/KAICD_sarscov2/EFA_DTI/checkpoint/"
 module_params:
   mol_dim: 128
   mol_n_layers: 8
@@ -27,10 +28,10 @@ module_params:
   eps: 1e-16
 dataset_params:
   data_dir: "/raid/KAICD_sarscov2/EFA_DTI/data/"
-  data_name: "BindingDB_IC50.ftr"
+  data_name: "BindingDB_IC50_filtering.ftr"
   unit: "nM"
   reset: False
   batch_size: 1024
   seed: 42
-  num_workers: 4
+  num_workers: 0
   pin_memory: True

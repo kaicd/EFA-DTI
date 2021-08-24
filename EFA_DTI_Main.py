@@ -1,6 +1,6 @@
 import pytorch_lightning as pl
 import yaml
-from pytorch_lightning.callbacks import LearningRateMonitor, EarlyStopping
+from pytorch_lightning.callbacks import LearningRateMonitor, EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 
 from EFA_DTI_DataModule import EFA_DTI_DataModule
@@ -35,6 +35,13 @@ trainer = pl.Trainer(
             patience=project_params["patience"], monitor=project_params["monitor"]
         ),
         LearningRateMonitor(logging_interval=project_params["logging_interval"]),
+        ModelCheckpoint(
+            dirpath=project_params["save_path"],
+            filename="EFA_DTI_best_mse",
+            monitor=project_params["monitor"],
+            save_top_k=1,
+            mode="min",
+        )
     ],
 )
 trainer.fit(net, data)
