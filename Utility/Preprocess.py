@@ -1,5 +1,5 @@
 import re
-from typing import Callable, Union
+from typing import Union
 
 import dgl
 import numpy as np

@@ -26,6 +26,7 @@ module_params:
   lr_anneal_epochs: 500
   weight_decay: 1e-8
   eps: 1e-16
+  scheduler: "Lambda"
 dataset_params:
   data_dir: "/raid/KAICD_sarscov2/EFA_DTI/data/"
   data_name: "BindingDB_IC50_filtering.ftr"
@@ -33,5 +34,5 @@ dataset_params:
   reset: False
   batch_size: 1024
   seed: 42
-  num_workers: 0
+  num_workers: 4
   pin_memory: True

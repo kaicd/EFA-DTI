@@ -29,6 +29,7 @@ class EFA_DTI_Module(pl.LightningModule):
         lr_anneal_epochs: int = 200,
         weight_decay: float = 1e-2,
         eps: float = 1e-16,
+        scheduler: str = "OneCycle"
     ):
         super(EFA_DTI_Module, self).__init__()
         self.save_hyperparameters()
@@ -103,14 +104,24 @@ class EFA_DTI_Module(pl.LightningModule):
             weight_decay=float(self.hparams.weight_decay),
             eps=float(self.hparams.eps),
         )
-        scheduler = {
-            "scheduler": th.optim.lr_scheduler.OneCycleLR(
+        scheduler_type = {
+            "Lambda": th.optim.lr_scheduler.LambdaLR(
+                optimizer,
+                lr_lambda=lambda epoch: max(
+                    1e-7,
+                    1 - epoch / self.hparams.lr_anneal_epochs
+                )
+            ),
+            "OneCycle": th.optim.lr_scheduler.OneCycleLR(
                 optimizer,
                 max_lr=0.01,
                 steps_per_epoch=self.num_training_steps,
                 epochs=self.hparams.lr_anneal_epochs,
                 anneal_strategy="cos",
-            ),
+            )
+        }
+        scheduler = {
+            "scheduler": scheduler_type[self.hparams.scheduler],
             "reduce_on_plateau": False,
             "interval": "epoch",
             "frequency": 1,

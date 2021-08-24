@@ -1,4 +1,3 @@
-import math
 import os
 import pickle
 from typing import Callable
@@ -9,7 +8,7 @@ from ogb.utils import smiles2graph
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
-from Utility.Preprocess import dgl_graph, get_fingerprint, EmbedProt
+from Utility.Preprocess import dgl_graph, get_fingerprint, EmbedProt, pIC50_transform
 
 
 class EFA_DTI_Dataset(Dataset):
@@ -20,7 +19,7 @@ class EFA_DTI_Dataset(Dataset):
         unit: str = "nM",
         reset: bool = False,
         device: int = 0,
-        y_transform: Callable = math.log10,
+        y_transform: Callable = pIC50_transform,
     ):
         self.data_dir = data_dir
         self.data_name = data_name
