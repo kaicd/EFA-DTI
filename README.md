@@ -2,7 +2,9 @@
 
 ### Modify prefix:
 1. Open KAICD.yaml
-2. prefix: /home/lhs/anaconda3/envs/KAICD to prefix: {your_anaconda3_path}/envs/{env_name}
+2. Change i to ii
+   1. prefix: /home/lhs/anaconda3/envs/KAICD
+   2. prefix: {your_anaconda3_path}/envs/{env_name}
 
 ### Create a conda environment:
 ```sh
@@ -25,6 +27,8 @@ https://wandb.ai/
 |Cc1nc(CN2CCN(CC2)c2c...|MALIPDLAMETWLLL...|10000.0|
 |...|...|...|
 |...|...|...|
+- **The IC50 unit must be unified(nM or uM or M).**
+- The unit must be specified in the config file (dataset_params -> unit)
 
 ### Modify data file path:
 1. Open config/efi_dti_config.yaml
