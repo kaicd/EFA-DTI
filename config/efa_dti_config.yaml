@@ -29,7 +29,7 @@ module_params:
   scheduler: "Lambda"
 dataset_params:
   data_dir: "/raid/KAICD_sarscov2/efa_dti/data/"
-  data_name: "BindingDB_IC50_filtering_2.ftr"
+  data_name: "BindingDB_IC50_filtering.ftr"
   unit: "nM"
   reset: False
   batch_size: 1024
