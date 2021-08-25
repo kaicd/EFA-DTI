@@ -11,7 +11,7 @@ from gin_data_module import GIN_DataModule
 from gin_module import GIN_Module
 
 # Load configuration file(.yaml)
-with open("../config/gin_config.yaml") as f:
+with open("config/gin_config.yaml") as f:
     cfg = yaml.load(f, Loader=yaml.FullLoader)
 
 # Set parameters

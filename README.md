@@ -32,5 +32,5 @@ https://wandb.ai/
 
 ## Runs
 ```sh
-python efa_dti/efa_dti_main.py
+PYTHONPATH="./" python efa_dti/efa_dti_main.py
 ```

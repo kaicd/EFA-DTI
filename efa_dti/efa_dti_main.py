@@ -11,7 +11,7 @@ from efa_dti_data_module import EFA_DTI_DataModule
 from efa_dti_module import EFA_DTI_Module
 
 # Load configuration file(.yaml)
-with open("../config/efa_dti_config.yaml") as f:
+with open("config/efa_dti_config.yaml") as f:
     cfg = yaml.load(f, Loader=yaml.FullLoader)
 
 # Set parameters

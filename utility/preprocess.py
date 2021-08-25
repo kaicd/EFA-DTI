@@ -147,7 +147,7 @@ def get_fingerprint(mol: Union[Chem.Mol, str], r=3, nBits=2048, **kwargs) -> np.
 
 
 def sequence_to_numerical(seq: str) -> np.ndarray:
-    seq_voc = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
+    seq_voc = "MALIPDETWVSYGHFKNCQRmgskpdqrclethfanvyiwxX2345678910Ubo-"
     seq_dict = {v: (i + 1) for i, v in enumerate(seq_voc)}
     max_seq_len = 1000
     x = np.zeros(max_seq_len)
