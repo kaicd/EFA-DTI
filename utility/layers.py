@@ -4,11 +4,13 @@ import dgl
 import dgl.function as fn
 import torch as th
 import torch.nn as nn
+import torch.nn.functional as F
 from dgl.ops import edge_softmax
 from einops import rearrange
 from ogb.graphproppred.mol_encoder import AtomEncoder, BondEncoder
+from torch_geometric.nn import global_add_pool
 
-from Utility.Norms import ReZero, GraphNormAndProj, EdgeNormWithGainAndBias
+from utility.norms import ReZero, GraphNormAndProj, EdgeNormWithGainAndBias
 
 """
 ----------------------
@@ -185,6 +187,45 @@ class GraphNet(nn.Module):
             g, n, e = self.attn_layers[i](g, n, e)
         out = self.readout(g, n)
         return out
+
+
+class GINNet(nn.Module):
+    def __init__(
+        self,
+        mol_dim: int = 78,
+        hidden_dim: int = 32,
+        output_dim: int = 128,
+        n_layers: int = 5,
+        act: str = "relu",
+        dropout: float = 0.2,
+    ):
+        super(GINNet, self).__init__()
+        acts = {"gelu": nn.GELU, "relu": nn.ReLU}
+        self.act = acts[act]()
+        self.dropout = dropout
+        self.n_layers = n_layers
+
+        self.conv_list, self.bn_list = [], []
+        for i in range(self.n_layers):
+            net = nn.Sequential(
+                nn.Linear(mol_dim if i == 0 else hidden_dim, hidden_dim),
+                self.act,
+                nn.Linear(hidden_dim, hidden_dim),
+            )
+            self.conv_list.append(net)
+            self.bn_list.append(nn.BatchNorm1d(hidden_dim))
+        self.fc = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, x, edge_index, batch):
+        for i in range(self.n_layers):
+            x = self.bn_list[i](self.act(self.conv_list[i](x, edge_index)))
+        x = F.dropout(
+            self.act(self.fc(global_add_pool(x, batch))),
+            p=self.dropout,
+            training=self.training,
+        )
+
+        return x
 
 
 """

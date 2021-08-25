@@ -8,27 +8,26 @@ project_params:
   patience: 80
   monitor: "valid_mse"
   logging_interval: "step"
-  save_path: "/raid/KAICD_sarscov2/EFA_DTI/checkpoint/"
+  save_path: "/raid/KAICD_sarscov2/efa_dti/checkpoint/"
 module_params:
-  mol_dim: 128
-  mol_n_layers: 8
-  mol_n_heads: 8
-  mol_attn: "softmax"
-  act: "gelu"
-  attn_dropout: 0.1
-  dropout: 0.3
-  graph_norm_type: "ln"
-  fp_dims: [2048, 512, 128]
-  prottrans_dims: [2048, 512, 256]
-  output_dims: [2048, 256, 1]
-  graph_pool: "mean_max"
-  lr: 0.0001
+  mol_dim: 78
+  hidden_dim: 32
+  n_layers: 5
+  prot_dim: 25
+  embed_dim: 128
+  in_channels: 1000
+  out_channels: 32
+  kernel_size: 8
+  output_dims: [1024, 256, 1]
+  dropout: 0.2
+  act: "relu"
+  lr: 0.0005
   lr_anneal_epochs: 500
   weight_decay: 1e-8
   eps: 1e-16
   scheduler: "Lambda"
 dataset_params:
-  data_dir: "/raid/KAICD_sarscov2/EFA_DTI/data/"
+  data_dir: "/raid/KAICD_sarscov2/efa_dti/data/"
   data_name: "BindingDB_IC50_filtering_2.ftr"
   unit: "nM"
   reset: False

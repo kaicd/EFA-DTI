@@ -7,7 +7,7 @@ from adabelief_pytorch import AdaBelief
 from lifelines.utils import concordance_index
 from sklearn.metrics import r2_score
 
-from Utility.Layers import MLP_IC, GraphNet
+from utility.layers import MLP_IC, GraphNet
 
 
 class EFA_DTI_Module(pl.LightningModule):
@@ -29,7 +29,7 @@ class EFA_DTI_Module(pl.LightningModule):
         lr_anneal_epochs: int = 200,
         weight_decay: float = 1e-2,
         eps: float = 1e-16,
-        scheduler: str = "OneCycle"
+        scheduler: str = "OneCycle",
     ):
         super(EFA_DTI_Module, self).__init__()
         self.save_hyperparameters()
@@ -108,9 +108,8 @@ class EFA_DTI_Module(pl.LightningModule):
             "Lambda": th.optim.lr_scheduler.LambdaLR(
                 optimizer,
                 lr_lambda=lambda epoch: max(
-                    1e-7,
-                    1 - epoch / self.hparams.lr_anneal_epochs
-                )
+                    1e-7, 1 - epoch / self.hparams.lr_anneal_epochs
+                ),
             ),
             "OneCycle": th.optim.lr_scheduler.OneCycleLR(
                 optimizer,
@@ -118,7 +117,7 @@ class EFA_DTI_Module(pl.LightningModule):
                 steps_per_epoch=self.num_training_steps,
                 epochs=self.hparams.lr_anneal_epochs,
                 anneal_strategy="cos",
-            )
+            ),
         }
         scheduler = {
             "scheduler": scheduler_type[self.hparams.scheduler],
