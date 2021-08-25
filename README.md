@@ -1,5 +1,10 @@
 ## Installation
 
+### Download repository:
+```sh
+git clone https://github.com/kaicd/EFA-DTI.git && cd EFA-DTI
+```
+
 ### Modify prefix:
 1. Open KAICD.yaml
 2. Change i to ii
