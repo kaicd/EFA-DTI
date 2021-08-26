@@ -43,7 +43,7 @@ https://wandb.ai/
    2. dataset params
       1. save_path: Path to save model
       2. data_dir : Path to directory with raw data files and pre-processed data files
-      3. data_name : Path to raw data files(.csv or .ftr) and pre-processed data files(.pkl)
+      3. data_name : Path to raw data files(.csv or .ftr)
 
 
 ## Runs
