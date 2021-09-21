@@ -6,7 +6,7 @@ import numpy as np
 import torch as th
 from rdkit import Chem
 from rdkit.Chem import AllChem, DataStructs
-from transformers import AutoTokenizer, AutoModel, pipeline
+from transformers import AutoModel, AutoTokenizer, pipeline
 
 
 def dgl_collate(batch):

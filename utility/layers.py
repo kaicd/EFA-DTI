@@ -8,7 +8,7 @@ from dgl.ops import edge_softmax
 from einops import rearrange
 from ogb.graphproppred.mol_encoder import AtomEncoder, BondEncoder
 
-from utility.norms import ReZero, GraphNormAndProj, EdgeNormWithGainAndBias
+from utility.norms import EdgeNormWithGainAndBias, GraphNormAndProj, ReZero
 
 """
 ----------------------
@@ -41,10 +41,9 @@ class GraphNetBlock(nn.Module):
         act: str = "relu",
         norm_type="gn",
     ):
-        """
-        Initialize a multi-headed attention block compatible with DGLGraph
-        inputs. Given a fully connected input graph with self loops,
-        is analogous to original Transformer.
+        """Initialize a multi-headed attention block compatible with DGLGraph
+        inputs. Given a fully connected input graph with self loops, is
+        analogous to original Transformer.
 
         Args:
             d_in: input dimension

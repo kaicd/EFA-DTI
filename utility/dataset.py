@@ -8,12 +8,7 @@ from ogb.utils import smiles2graph
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
-from utility.preprocess import (
-    dgl_graph,
-    get_fingerprint,
-    EmbedProt,
-    pIC50_transform,
-)
+from utility.preprocess import EmbedProt, dgl_graph, get_fingerprint, pIC50_transform
 
 
 class EFA_DTI_Dataset(Dataset):

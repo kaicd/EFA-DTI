@@ -2,7 +2,7 @@ from typing import Callable, Optional
 
 import pytorch_lightning as pl
 from sklearn.model_selection import train_test_split
-from torch.utils.data import Subset, DataLoader
+from torch.utils.data import DataLoader, Subset
 
 from utility.dataset import EFA_DTI_Dataset
 from utility.preprocess import dgl_collate, pIC50_transform

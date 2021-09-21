@@ -1,6 +1,6 @@
 import dgl
 import torch as th
-from dgl.backend.pytorch.sparse import _gsddmm, _gspmm, gspmm, gsddmm
+from dgl.backend.pytorch.sparse import _gsddmm, _gspmm, gsddmm, gspmm
 from torch import nn
 
 
@@ -149,10 +149,11 @@ def edge_norm(gidx, scores, eids=dgl.base.ALL):
 
 
 class EdgeNormWithGainAndBias(th.nn.Module):
-    """
-    Edge normalization with gain and bias per head from Richter and
-    Wattenhofer, 2020. https://arxiv.org/abs/2005.09561, adapted for graph
-    input structures.
+    """Edge normalization with gain and bias per head from Richter and
+    Wattenhofer, 2020.
+
+    https://arxiv.org/abs/2005.09561, adapted for graph input
+    structures.
     """
 
     def __init__(self, nheads: int = 1):
