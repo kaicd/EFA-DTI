@@ -28,4 +28,5 @@ docker run \
     -v $(pwd)/storage:/raid/KAICD_sarscov2/efa_dti \
     -v $(pwd)/wandb:/app/wandb \
     -v $(pwd):/app \
-    /bin/bash
+    --entrypoint bash
+    kaicd-efa-dti
