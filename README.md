@@ -68,7 +68,7 @@ $ git clone https://github.com/kaicd/EFA-DTI.git && cd EFA-DTI
 # Create the storage directory (will be later mounted into the Docker container)
 $ mkdir -p storage/data
 # Download the dataset
-$ (cd storage/data && wget https://bindingdb-ic50-1m.s3.eu-central-1.amazonaws.com/BindingDB_IC50_filtering.ftr)
+$ (cd storage/data && wget https://kaicd-flower-cloud-logs.s3.ap-northeast-2.amazonaws.com/BindingDB/BindingDB_IC50_filtering.ftr)
 ```
 
 ## Usage
